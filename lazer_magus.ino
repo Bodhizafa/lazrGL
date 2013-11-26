@@ -122,6 +122,7 @@ void check_cmd() {
   long smillis;
   if (Serial.available()) {
     debug = true;
+    if (debug) { Serial.write("︻╦╤─ †Ɍ∆Ƥ ȘĦİ† ︻╦╤─\n\n"); }
     char cmd = Serial.read();
     switch(cmd) {
       // Enable the laser
