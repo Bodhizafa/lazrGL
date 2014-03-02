@@ -20,7 +20,7 @@ int blanking = 31;
 #define pi (3.14159)
 
 static boolean enable;
-#define INTERNODE_DELAY_US 150
+#define INTERNODE_DELAY_US 50
 #define INTERPAT_DELAY_US 400
 #define FLAG_BLANKING 1
 #define FLAG_END (1 << 1)
@@ -75,6 +75,15 @@ void render_box(float t, struct frame_s* f, void* params) {
     f->y = -1;
   }
 }
+
+void render_spiro(float t, struct frame_s* f, void* params) {
+  float k = .3; // Inner circle radius
+  float l = 1;  // Pen position (0 = center, 1 = edge)
+  t = t * 16 * PI;
+  f->flags = FLAG_BLANKING;
+  f->x = (1 - k) * cos(t) + l * k * cos(((1 - k) / k) * t);
+  f->y = (1 - k) * sin(t) - l * k * sin(((1 - k) / k) * t);
+}
  
 // display pat under the current mvmatrix
 void display_pattern(struct pattern_s* pat) {
@@ -112,9 +121,9 @@ boolean debug = false;
 
 void iterate(long frame) {
   float th = (float)frame / 23.0; 
-  mvMatrixTranslate(frame, frame);
+  mvMatrixTranslate(sin(frame / 10.) * 1000 + 2048, cos(frame / 13.) * 1000 + 2048);
   mvMatrixRotate(th * 1.3);
-  mvMatrixScale(1024, 1024);
+  mvMatrixScale(1024 + 400 * sin(th / 4.), 1024 + 400 * sin(th / 5.));
 }
 static long steps;
 static pattern_s* pattern = NULL; // Currently there's only one pattern. This is cause I'm lazy.
@@ -220,11 +229,10 @@ void setup() {
   frame = 0;
   SET_LASER(LOW);  //turn off
 
-  pattern = mkPat(render_box, 0.02, NULL);
+  pattern = mkPat(render_spiro, 0.01, NULL);
   
   mvMatrixPush();
   mvMatrixIdentity();
-  mvMatrixTranslate(0.5, 0.5);
   while (Serial.available() == 0) {
     // derp
   }
